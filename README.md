@@ -1,0 +1,1 @@
+# HDFS_INIT_CONF
