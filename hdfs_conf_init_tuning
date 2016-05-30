@@ -1,0 +1,61 @@
+
+## hdfs配置优化
+
+1、NameNode内存大小（默认1GB），$HADOOP_HOME/etc/hadoop/hadoop-env.sh $HADOOP_HEAPSIZE及HADOOP_NAMENODE_OPTS
+   --> 20G (2亿个block)
+   --> export HADOOP_NAMENODE_INIT_HEAPSIZE="-Xms20G"
+
+2、balance的网络限制大小（默认1MB/s）
+   -->  8Mb/s
+   -->  dfs.datanode.balance.bandwidthPerSec  8388608
+
+3、dfs.hosts.include和dfs.hosts.exclude
+   --> dfs.hosts   $HADOOP_HOME/etc/hadoop/include
+   --> dfs.exclude $HADOOP_HOME/etc/hadoop/exclude
+
+4、NameNode检查点的生成周期（默认1小时）
+   --> 10 min
+   --> dfs.namenode.checkpoint.period 600
+
+5、DataBlockScanner检查数据坏块的周期（默认3周）
+   --> 1周
+   --> dfs.datanode.scan.period.hours 168
+
+6、DataNode的机架配置topology.script.file.name
+   --> net.topology.script.file.name  $HADOOP_HOME/etc/hadoop/rack-aware.sh
+
+7、DataNode节点的dfs.data.dir支持双目录，更方便使用A5的/data及/data1两个磁盘分区
+   --> tlinux   2RAID1 + 10RAID5  /data1
+
+8  数据块大小修改，dfs.block.size
+   --> 128M
+   --> dfs.blocksize 134217728
+
+9、设置一定的磁盘待保留空间：dfs.datanode.du.reserved，字节为单位
+   --> 20G
+   --> dfs.datanode.du.reserved  21474836480
+
+10、设置各个目录的空间容量限制 hdfs dfsadmin -setSpaceQuota 1t /user/impala
+
+11、设置文件副本数dfs.replication=3, dfs.replication.min=1
+
+12、ulimit
+    --> 50w
+
+13、看有无必要将linux文件的noatime改为不更新文件访问时间，加速文件的读取效率
+    修改：
+    13.1、/etc/fstab
+          --> noatime,nodiratime
+    13.2、mount -o remount 分区
+
+14、目录规划
+    --Hadoop用户 ：/home/hadoop
+    --namenode   : /data/hadoopdata/name
+    --datanode   : /data1/hadoopdata/data
+    --运行依赖   ：/data/hadoopenv
+
+15、WebHDFS REST API
+    --> dfs.webhdfs.enabled true
+
+16、回收站
+    --> fs.trash.interval 1天
